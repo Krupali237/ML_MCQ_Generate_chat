@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MCQ Generator - Smart Study Assistant</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='ui.css') }}" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('index') }}">Smart Study Assistant</a>
+      </div>
+    </nav>
+
+    <div class="container mt-4 fade-in">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="mt-2">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Document Info</h5>
+              {% if document.filename %}
+              <p><strong>Name:</strong> {{ document.filename }}</p>
+              <p>
+                <strong>{{ document.unit_label|capitalize }}:</strong>
+                {{ document.num_units }}
+              </p>
+              {% if document.summary %}
+              <p class="small text-muted">{{ document.summary }}</p>
+              {% endif %}
+              {% else %}
+              <p class="text-muted">No document loaded. Please upload one first.</p>
+              <a href="{{ url_for('upload') }}" class="btn btn-outline-primary btn-sm">
+                Upload document
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-8">
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <h4 class="card-title mb-3">Generate MCQs</h4>
+              <form method="post" class="row g-3" onsubmit="showOverlay('Generating MCQs...');">
+                <div class="col-md-4">
+                  <label for="num_questions" class="form-label">Number of questions</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value="5"
+                    class="form-control"
+                    id="num_questions"
+                    name="num_questions"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label for="difficulty" class="form-label">Difficulty</label>
+                  <select id="difficulty" name="difficulty" class="form-select">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-end">
+                  <button type="submit" class="btn btn-primary">Generate MCQs</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {% if mcqs %}
+          <div class="mb-3">
+            <h5>Learning Mode (with answers &amp; explanations)</h5>
+            {% for q in mcqs %}
+            <div class="card mb-2 mcq-card shadow-sm">
+              <div class="card-body">
+                <p class="fw-semibold mb-2">{{ loop.index }}. {{ q.question }}</p>
+                <ul class="list-unstyled mb-2">
+                  <li>A. {{ q.options[0] }}</li>
+                  <li>B. {{ q.options[1] }}</li>
+                  <li>C. {{ q.options[2] }}</li>
+                  <li>D. {{ q.options[3] }}</li>
+                </ul>
+                <p class="text-success small mb-1">
+                  <strong>Answer:</strong> {{ q.answer }}
+                </p>
+                <p class="text-muted small mb-0">
+                  <strong>Explanation:</strong> {{ q.explanation }}
+                </p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title mb-2">Start Quiz (Quiz Mode)</h5>
+              <p class="small text-muted mb-2">
+                Use the same settings to start an interactive quiz where answers are hidden until the
+                end.
+              </p>
+              <form action="{{ url_for('start_quiz') }}" method="post" class="row g-2">
+                <div class="col-md-4">
+                  <label for="q_num" class="form-label">Number of questions</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value="{{ mcqs|length }}"
+                    class="form-control"
+                    id="q_num"
+                    name="num_questions"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label for="q_diff" class="form-label">Difficulty</label>
+                  <select id="q_diff" name="difficulty" class="form-select">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-end">
+                  <button type="submit" class="btn btn-success">Start Quiz</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-muted">
+            Generated MCQs will appear here in learning mode, and you can then start a quiz.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="spinner-card text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div id="overlay-message" class="mt-2 small text-muted">Working...</div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+  </html>
+

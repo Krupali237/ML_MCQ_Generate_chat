@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="w-full max-w-3xl mx-auto my-10">
+    <!-- Header / Progress -->
+    <div class="mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center text-gray-700">
+        <h2 class="text-2xl font-bold text-indigo-900 hidden sm:block">Quiz Mode</h2>
+        <div class="text-center mx-auto sm:mx-0">
+            <div id="timerDisplay" class="font-mono text-xl font-bold bg-indigo-50 text-indigo-700 px-4 py-1 rounded-lg border border-indigo-100">00:00</div>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="font-semibold text-lg">Q <span id="currentQInfo" class="text-indigo-600">1</span> / <span id="totalQInfo">{{ mcqs|length }}</span></span>
+            <button id="quitBtn" class="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-4 py-2 rounded-lg font-bold transition text-sm">Quit Quiz</button>
+        </div>
+    </div>
+    
+    <!-- Timer & Progress bar -->
+    <div class="mb-6 relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div id="progressBar" class="absolute top-0 left-0 h-full bg-indigo-500 transition-all duration-300 w-0"></div>
+    </div>
+
+    <!-- Quiz Container -->
+    <div id="quizContainer" class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 relative min-h-[400px]">
+        {% for mcq in mcqs %}
+        <div class="question-pane hidden space-y-6" data-index="{{ loop.index0 }}" data-correct="{{ mcq.correct_answer }}">
+            <h3 class="text-xl font-semibold text-gray-900 leading-relaxed">{{ mcq.question }}</h3>
+            <div class="space-y-3 options-container">
+                {% set outer_idx = loop.index0 %}
+                {% for opt_key, opt_val in {'A': mcq.option_a, 'B': mcq.option_b, 'C': mcq.option_c, 'D': mcq.option_d}.items() %}
+                <label class="option-label block relative cursor-pointer group">
+                    <input type="radio" name="q_{{ outer_idx }}" value="{{ opt_key }}" class="peer sr-only">
+                    <div class="bg-gray-50 border-2 border-transparent rounded-xl p-4 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition group-hover:bg-gray-100 flex items-center gap-3 option-box">
+                        <span class="w-8 h-8 rounded-full bg-white text-gray-700 font-bold border border-gray-300 flex items-center justify-center shrink-0 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-transparent transition option-letter">{{ opt_key }}</span>
+                        <span class="text-gray-800 text-lg">{{ opt_val }}</span>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+            <!-- Explanation Block (hidden by default) -->
+            <div class="explanation-block hidden mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-blue-900">
+                <p class="font-bold text-sm mb-1 uppercase tracking-wide">Explanation:</p>
+                <p>{{ mcq.explanation }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Controls -->
+        <div class="mt-8 flex justify-between items-center border-t border-gray-100 pt-6">
+            <button id="prevBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-xl font-bold transition opacity-0 pointer-events-none">Previous</button>
+            <button id="nextBtn" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition">Next</button>
+        </div>
+    </div>
+
+    <!-- Final Result Container -->
+    <div id="resultContainer" class="hidden bg-white rounded-3xl shadow-xl p-10 text-center border border-gray-100 flex flex-col items-center">
+        <i class="fas fa-trophy text-6xl text-yellow-400 mb-6 drop-shadow-lg"></i>
+        <h2 class="text-4xl font-extrabold text-gray-900 mb-2" id="resultTitle">Quiz Completed!</h2>
+        <p class="text-xl text-gray-600 mb-4">You scored <span id="finalScore" class="text-indigo-600 font-bold text-3xl">0</span> out of {{ mcqs|length }}</p>
+        
+        <div class="font-mono text-gray-500 mb-6 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">Time Taken: <span id="finalTime" class="font-bold text-gray-800"></span></div>
+
+        <div class="w-full bg-gray-100 rounded-full h-6 mb-8 mt-2 overflow-hidden shadow-inner">
+            <div id="scoreBar" class="h-6 rounded-full bg-gradient-to-r from-green-400 to-indigo-500 transition-all duration-1000 w-0"></div>
+        </div>
+
+        <div class="flex justify-center gap-4 w-full">
+            <button id="reviewBtn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl transition">Review Answers</button>
+            <a href="/history" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg text-center">Go to History</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const totalQ = {{ mcqs|length }};
+    const setId = {{ set_id }};
+    let currentQ = 0;
+    let score = 0;
+    
+    const panes = document.querySelectorAll('.question-pane');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const quitBtn = document.getElementById('quitBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    
+    let isReviewing = false;
+    let quizFinished = false;
+    let startTime = Date.now();
+    
+    let timerInterval = setInterval(() => {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        let m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        let s = (elapsed % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `${m}:${s}`;
+    }, 1000);
+
+    function showPane(idx) {
+        panes.forEach((p, i) => {
+            if(i === idx) p.classList.remove('hidden');
+            else p.classList.add('hidden');
+        });
+        document.getElementById('currentQInfo').textContent = idx + 1;
+        document.getElementById('progressBar').style.width = `${((idx+1)/totalQ)*100}%`;
+        
+        if (idx === 0) {
+            prevBtn.classList.add('opacity-0', 'pointer-events-none');
+        } else {
+            prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        if (idx === totalQ - 1) {
+            nextBtn.textContent = quizFinished ? "Finish Review" : "Submit Quiz";
+            nextBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            nextBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        } else {
+            nextBtn.textContent = "Next";
+            nextBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            nextBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        }
+    }
+
+    if(totalQ > 0) showPane(0);
+
+    function finishQuiz(isQuit = false) {
+        if(quizFinished) return;
+        quizFinished = true;
+        clearInterval(timerInterval);
+        document.getElementById('finalTime').textContent = timerDisplay.textContent;
+
+        score = 0;
+        let answeredQuestions = 0;
+        
+        panes.forEach(pane => {
+            const selected = pane.querySelector('input[type="radio"]:checked');
+            const correct = pane.dataset.correct;
+            
+            pane.querySelectorAll('input').forEach(i => i.disabled = true); // Lock answers
+            
+            pBox = pane.querySelector('.options-container');
+            
+            if (selected) {
+                answeredQuestions++;
+                const div = selected.closest('label').querySelector('.option-box');
+                if (selected.value === correct) {
+                    score++;
+                    div.classList.add('bg-green-50', 'border-green-500');
+                    selected.closest('label').querySelector('.option-letter').classList.add('bg-green-600', 'text-white', 'border-transparent');
+                } else {
+                    div.classList.add('bg-red-50', 'border-red-500');
+                    selected.closest('label').querySelector('.option-letter').classList.add('bg-red-600', 'text-white', 'border-transparent');
+                    
+                    const correctOption = pane.querySelector(`input[value="${correct}"]`);
+                    if(correctOption) {
+                        const cDiv = correctOption.closest('label').querySelector('.option-box');
+                        cDiv.classList.add('bg-green-50', 'border-green-500');
+                    }
+                }
+            } else {
+                const correctOption = pane.querySelector(`input[value="${correct}"]`);
+                if(correctOption) {
+                    const cDiv = correctOption.closest('label').querySelector('.option-box');
+                    cDiv.classList.add('bg-green-50', 'border-green-500');
+                }
+            }
+            pane.querySelector('.explanation-block').classList.remove('hidden');
+        });
+
+        if(isQuit) {
+            document.getElementById('resultTitle').textContent = "Quiz Stopped Early";
+        }
+
+        document.getElementById('quizContainer').classList.add('hidden');
+        document.getElementById('resultContainer').classList.remove('hidden');
+        document.getElementById('finalScore').textContent = score;
+        
+        const pct = Math.round((score/totalQ)*100);
+        setTimeout(() => document.getElementById('scoreBar').style.width = `${pct}%`, 100);
+
+        fetch('/api/save_attempt', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ set_id: setId, score: score, total: totalQ })
+        }).catch(e => console.log('Error saving:', e));
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if(currentQ < totalQ - 1) {
+            currentQ++;
+            showPane(currentQ);
+        } else {
+            if(quizFinished) {
+                window.location.href = '/history';
+            } else {
+                finishQuiz(false);
+            }
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if(currentQ > 0) {
+            currentQ--;
+            showPane(currentQ);
+        }
+    });
+
+    quitBtn.addEventListener('click', () => {
+        if(!quizFinished) {
+            if(confirm('Are you sure you want to quit? Your current progress will be evaluated.')) {
+                finishQuiz(true);
+            }
+        }
+    });
+
+    document.getElementById('reviewBtn').addEventListener('click', () => {
+        document.getElementById('resultContainer').classList.add('hidden');
+        document.getElementById('quizContainer').classList.remove('hidden');
+        quitBtn.classList.add('hidden');
+        timerDisplay.parentElement.classList.add('hidden');
+        currentQ = 0;
+        showPane(0);
+    });
+
+</script>
+{% endblock %}

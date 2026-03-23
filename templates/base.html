@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Study Assistant</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .gradient-text {
+            background-color: #f3ec78;
+            background-image: linear-gradient(45deg, #4f46e5, #ec4899);
+            background-size: 100%;
+            -webkit-background-clip: text;
+            -moz-background-clip: text;
+            -webkit-text-fill-color: transparent; 
+            -moz-text-fill-color: transparent;
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            min-width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        /* Floating Home Button */
+        .fab-home {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 999;
+            background: linear-gradient(135deg, #4f46e5, #ec4899);
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 24px;
+        }
+        .fab-home:hover {
+            transform: scale(1.15) rotate(-10deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+    <!-- Navbar -->
+    <nav class="w-full glass shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+            <a href="/" class="text-2xl font-bold gradient-text flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <i class="fas fa-brain"></i>
+                Smart Study Async
+            </a>
+            
+            <div class="hidden md:flex gap-6 items-center">
+                {% set path = request.path %}
+                <a href="/" class="text-sm font-semibold transition {% if path == '/' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-home mr-1"></i> Home
+                </a>
+                <!-- <a href="/" class="text-sm font-semibold transition {% if path == '/upload' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-cloud-upload-alt mr-1"></i> Upload
+                </a> -->
+                <a href="/chat" class="text-sm font-semibold transition {% if path == '/chat' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-comments mr-1"></i> Chat
+                </a>
+                <a href="/mcq_setup" class="text-sm font-semibold transition {% if path == '/mcq_setup' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-magic mr-1"></i> MCQ Gen
+                </a>
+                <!-- <a href="/history#mcqs" class="text-sm font-semibold transition {% if path == '/quiz' or path == '/view_quiz' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-play-circle mr-1"></i> Quiz
+                </a> -->
+                <a href="/history" class="text-sm font-semibold transition {% if path == '/history' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-history mr-1"></i> History
+                </a>
+                <a href="/about" class="text-sm font-semibold transition {% if path == '/about' %}text-indigo-600 border-b-2 border-indigo-600 pb-1{% else %}text-gray-600 hover:text-indigo-500{% endif %}">
+                    <i class="fas fa-info-circle mr-1"></i> About
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobileMenuBtn" class="text-gray-500 hover:text-indigo-600 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Dropdown -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-lg absolute w-full">
+            <div class="px-4 pt-2 pb-4 space-y-1">
+                <a href="/" class="block px-3 py-2 rounded-md text-base font-medium {% if path == '/' %}bg-indigo-50 text-indigo-600{% else %}text-gray-700 hover:bg-gray-50 hover:text-indigo-600{% endif %}">Home</a>
+                <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600">Upload</a>
+                <a href="/chat" class="block px-3 py-2 rounded-md text-base font-medium {% if path == '/chat' %}bg-indigo-50 text-indigo-600{% else %}text-gray-700 hover:bg-gray-50 hover:text-indigo-600{% endif %}">Chat</a>
+                <a href="/mcq_setup" class="block px-3 py-2 rounded-md text-base font-medium {% if path == '/mcq_setup' %}bg-indigo-50 text-indigo-600{% else %}text-gray-700 hover:bg-gray-50 hover:text-indigo-600{% endif %}">MCQ Gen</a>
+                <a href="/history#mcqs" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600">Quiz</a>
+                <a href="/history" class="block px-3 py-2 rounded-md text-base font-medium {% if path == '/history' %}bg-indigo-50 text-indigo-600{% else %}text-gray-700 hover:bg-gray-50 hover:text-indigo-600{% endif %}">History</a>
+                <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium {% if path == '/about' %}bg-indigo-50 text-indigo-600{% else %}text-gray-700 hover:bg-gray-50 hover:text-indigo-600{% endif %}">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Go to Home Button -->
+    <a href="/" class="fab-home text-white" title="Go to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <main class="w-full flex-grow flex flex-col items-center justify-center p-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="w-full text-center py-6 text-gray-500 text-sm border-t border-gray-200 mt-auto bg-white/50 glass">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-6">
+            <p>&copy; 2026 Smart Study Assistant. All rights reserved.</p>
+            <p class="mt-2 md:mt-0 font-medium text-gray-600">Powered by Flask & Tailwind CSS</p>
+        </div>
+    </footer>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Mobile menu toggle
+        const btn = document.getElementById('mobileMenuBtn');
+        const menu = document.getElementById('mobileMenu');
+        if(btn) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
+        
+        // Global Toast Notification function
+        function showToast(message, type='info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'info-circle';
+            let color = 'text-blue-500';
+            if(type === 'success') { icon = 'check-circle'; color = 'text-green-500'; }
+            if(type === 'error') { icon = 'times-circle'; color = 'text-red-500'; }
+            
+            toast.innerHTML = `
+                <i class="fas ${icon} ${color} text-xl"></i>
+                <span class="font-medium text-gray-800">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        window.showToast = showToast;
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

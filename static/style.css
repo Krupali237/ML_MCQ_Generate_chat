@@ -1,0 +1,59 @@
+body {
+  background-color: #f5f7fb;
+}
+
+.card {
+  border-radius: 0.75rem;
+}
+
+.navbar-brand {
+  font-weight: 600;
+}
+
+#drop-zone {
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+#drop-zone.drag-over {
+  background-color: #e7f1ff;
+  border-color: #0d6efd;
+}
+
+.chat-container {
+  max-height: calc(100vh - 80px);
+}
+
+.chat-card {
+  height: 70vh;
+}
+
+.chat-window {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.chat-bubble {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-bubble.user {
+  background-color: #0d6efd;
+  color: #ffffff;
+  margin-left: auto;
+  max-width: 80%;
+}
+
+.chat-bubble.assistant {
+  background-color: #e9ecef;
+  margin-right: auto;
+  max-width: 80%;
+}
+
+.mcq-card {
+  border-left: 4px solid #0d6efd;
+}
+

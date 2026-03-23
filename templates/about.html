@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-5xl w-full mx-auto my-12 space-y-16">
+    <!-- Hero Section -->
+    <div class="text-center space-y-6 relative">
+        <div class="absolute -top-20 -left-20 w-64 h-64 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style="animation-delay: 2s;"></div>
+        
+        <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight sm:text-6xl relative z-10">
+            About <span class="gradient-text">Smart Study Assistant</span>
+        </h1>
+        <p class="text-xl text-gray-600 font-light max-w-3xl mx-auto relative z-10">
+            Your personal AI-powered reading and learning companion. We transform static documents into interactive learning experiences.
+        </p>
+    </div>
+
+    <!-- How it Works -->
+    <div class="bg-white/80 glass rounded-3xl p-10 shadow-xl border border-gray-100 relative z-10">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-8"><i class="fas fa-cogs text-indigo-500 mr-2"></i> How It Works</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center group">
+                <div class="h-20 w-20 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-indigo-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">1. Upload</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">Simply upload your course material in PDF or PPTX format. Our system securely processes the document.</p>
+            </div>
+            <div class="text-center group">
+                <div class="h-20 w-20 bg-pink-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <i class="fas fa-brain text-3xl text-pink-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">2. Analyze</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">Our AI models digest the content, creating an intelligent search index to understand the context deeply.</p>
+            </div>
+            <div class="text-center group">
+                <div class="h-20 w-20 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <i class="fas fa-magic text-3xl text-green-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">3. Interact</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">Chat with your document to clarify concepts or generate a quiz to test your newly acquired knowledge.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="grid md:grid-cols-2 gap-8 relative z-10">
+        <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl p-8 text-white shadow-lg transform hover:-translate-y-2 transition duration-300">
+            <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                <i class="fas fa-comments text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Chat with PDF</h3>
+            <p class="text-indigo-100 mb-4 text-sm leading-relaxed">Stop skimming pages. Ask direct questions and get instant, accurate answers extracted directly from your study materials.</p>
+            <ul class="space-y-2 text-sm text-indigo-50 font-medium cursor-default">
+                <li><i class="fas fa-check-circle text-indigo-300 mr-2"></i> Context-aware responses</li>
+                <li><i class="fas fa-check-circle text-indigo-300 mr-2"></i> Conversational memory</li>
+                <li><i class="fas fa-check-circle text-indigo-300 mr-2"></i> Clean markdown formatting</li>
+            </ul>
+        </div>
+        
+        <div class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl p-8 text-white shadow-lg transform hover:-translate-y-2 transition duration-300">
+            <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                <i class="fas fa-list-check text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">MCQ Generator & Quiz</h3>
+            <p class="text-pink-100 mb-4 text-sm leading-relaxed">Instantly generate high-quality multiple choice questions. Take interactive quizzes to reinforce what you've learned.</p>
+            <ul class="space-y-2 text-sm text-pink-50 font-medium cursor-default">
+                <li><i class="fas fa-check-circle text-rose-300 mr-2"></i> Adjustable difficulty</li>
+                <li><i class="fas fa-check-circle text-rose-300 mr-2"></i> Guaranteed answer accuracy</li>
+                <li><i class="fas fa-check-circle text-rose-300 mr-2"></i> Interactive exam UI</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Technologies -->
+    <div class="text-center relative z-10">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Powered by Modern Technology</h2>
+        <div class="flex flex-wrap justify-center gap-4">
+            <span class="px-6 py-3 bg-white border border-gray-200 shadow-sm rounded-full text-gray-700 font-bold flex items-center gap-2 hover:border-indigo-300 hover:text-indigo-600 transition">
+                <i class="fab fa-python text-lg"></i> Flask
+            </span>
+            <span class="px-6 py-3 bg-white border border-gray-200 shadow-sm rounded-full text-gray-700 font-bold flex items-center gap-2 hover:border-indigo-300 hover:text-indigo-600 transition">
+                <i class="fas fa-robot text-lg"></i> Advanced AI
+            </span>
+            <span class="px-6 py-3 bg-white border border-gray-200 shadow-sm rounded-full text-gray-700 font-bold flex items-center gap-2 hover:border-indigo-300 hover:text-indigo-600 transition">
+                <i class="fas fa-server text-lg"></i> Ollama
+            </span>
+            <span class="px-6 py-3 bg-white border border-gray-200 shadow-sm rounded-full text-gray-700 font-bold flex items-center gap-2 hover:border-indigo-300 hover:text-indigo-600 transition">
+                <i class="fas fa-database text-lg"></i> ChromaDB
+            </span>
+            <span class="px-6 py-3 bg-white border border-gray-200 shadow-sm rounded-full text-gray-700 font-bold flex items-center gap-2 hover:border-indigo-300 hover:text-indigo-600 transition">
+                <i class="fab fa-css3-alt text-lg"></i> Tailwind CSS
+            </span>
+        </div>
+    </div>
+</div>
+{% endblock %}
