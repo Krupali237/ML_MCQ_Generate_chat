@@ -21,23 +21,47 @@
         
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Difficulty Level</label>
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-4 gap-3">
                 <label class="cursor-pointer">
                     <input type="radio" name="difficulty" value="Easy" class="peer sr-only">
-                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-green-100 peer-checked:border-green-500 peer-checked:text-green-700 font-medium transition">
+                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-green-100 peer-checked:border-green-500 peer-checked:text-green-700 font-medium transition text-sm">
                         Easy
                     </div>
                 </label>
                 <label class="cursor-pointer">
                     <input type="radio" name="difficulty" value="Medium" class="peer sr-only" checked>
-                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-yellow-100 peer-checked:border-yellow-500 peer-checked:text-yellow-700 font-medium transition">
+                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-yellow-100 peer-checked:border-yellow-500 peer-checked:text-yellow-700 font-medium transition text-sm">
                         Medium
                     </div>
                 </label>
                 <label class="cursor-pointer">
                     <input type="radio" name="difficulty" value="Hard" class="peer sr-only">
-                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-red-100 peer-checked:border-red-500 peer-checked:text-red-700 font-medium transition">
+                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-red-100 peer-checked:border-red-500 peer-checked:text-red-700 font-medium transition text-sm">
                         Hard
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="difficulty" value="Mix" class="peer sr-only">
+                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-purple-100 peer-checked:border-purple-500 peer-checked:text-purple-700 font-medium transition text-sm">
+                        Mix
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Question Type</label>
+            <div class="grid grid-cols-2 gap-3">
+                <label class="cursor-pointer">
+                    <input type="radio" name="q_type" value="Standard" class="peer sr-only" checked>
+                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-indigo-100 peer-checked:border-indigo-500 peer-checked:text-indigo-700 font-medium transition">
+                        Standard
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="q_type" value="Unique" class="peer sr-only">
+                    <div class="text-center bg-gray-50 border border-gray-200 rounded-xl py-3 peer-checked:bg-blue-100 peer-checked:border-blue-500 peer-checked:text-blue-700 font-medium transition">
+                        Unique
                     </div>
                 </label>
             </div>
@@ -60,6 +84,7 @@
         e.preventDefault();
         const count = parseInt(document.getElementById('qCount').value);
         const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+        const q_type = document.querySelector('input[name="q_type"]:checked').value;
         const btn = document.getElementById('genBtn');
         const load = document.getElementById('loadingInfo');
         
@@ -72,7 +97,7 @@
             const res = await fetch('/api/generate_mcq', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ doc_id: "{{ doc_id }}", count, difficulty })
+                body: JSON.stringify({ doc_id: "{{ doc_id }}", count, difficulty, q_type })
             });
 
             if (!res.ok) {

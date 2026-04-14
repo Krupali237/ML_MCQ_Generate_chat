@@ -9,8 +9,13 @@ from db import init_db, save_chat_message, get_chat_history, save_mcq_set, get_r
 from processing import process_document, retrieve_context, get_all_chunks
 from llm import chat_with_context, generate_mcqs
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "super_smart_study_assistant_secret"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super_smart_study_assistant_secret")
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
