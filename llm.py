@@ -1,7 +1,8 @@
+import os
 import requests
 import json
 
-OLLAMA_API_URL = "http://localhost:11434/api"
+OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://localhost:11434/api")
 
 def get_embedding(text):
     url = f"{OLLAMA_API_URL}/embeddings"
@@ -77,11 +78,20 @@ def chat_with_context(query, context, history_messages=None):
         print(f"Error in chat completion: {e}")
         return "Sorry, I encountered an error while trying to generate a response. Your system might be taking too long to process."
 
-def generate_mcqs(text_chunk, count=3, difficulty="Medium"):
+def generate_mcqs(text_chunk, count=3, difficulty="Medium", q_type="Standard"):
+    type_instruction = ""
+    if q_type.lower() == "unique":
+        type_instruction = "Ensure the questions are highly unique, analytical, and test deep understanding rather than just factual recall.\n"
+    
+    diff_instruction = f"with {difficulty} difficulty"
+    if difficulty.lower() == "mix":
+        diff_instruction = "with a mix of Easy, Medium, and Hard difficulties"
+
     system_prompt = (
         "You are an expert educational content creator. Your task is to generate Multiple Choice Questions (MCQs) "
         "based strictly on the provided text. Never include information not in the text.\n"
-        f"Generate exactly {count} MCQs with {difficulty} difficulty.\n"
+        f"Generate exactly {count} MCQs {diff_instruction}.\n"
+        f"{type_instruction}"
         "You MUST return the output ONLY as a valid JSON array of objects, with no other text, markdown blocks, or greetings. "
         "Each object MUST have the following keys: 'question', 'A', 'B', 'C', 'D', 'correct_answer' (must be one of 'A', 'B', 'C', 'D'), and 'explanation'. "
         "Example output format:\n"

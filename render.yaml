@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: smart-study-assistant
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: OLLAMA_API_URL
+        value: "http://host.docker.internal:11434/api" # Optional: update if hosting Ollama elsewhere
+      - key: OLLAMA_BASE_URL
+        value: "http://host.docker.internal:11434" # Optional: update if hosting Ollama elsewhere

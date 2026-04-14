@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any, Dict, Optional
 
 import requests
 
-
-OLLAMA_BASE_URL = "http://127.0.0.1:11434"
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 
 
 class OllamaError(RuntimeError):

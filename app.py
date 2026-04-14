@@ -12,6 +12,7 @@ from llm import chat_with_context, generate_mcqs
 app = Flask(__name__)
 app.secret_key = "super_smart_study_assistant_secret"
 app.config['UPLOAD_FOLDER'] = 'uploads'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 init_db()
 
@@ -101,6 +102,7 @@ def generate_mcq_api():
     doc_id = data.get('doc_id')
     count = int(data.get('count', 5))
     difficulty = data.get('difficulty', 'Medium')
+    q_type = data.get('q_type', 'Standard')
     doc_name = session.get('doc_name', 'Unknown Document')
     
     chunks = get_all_chunks(doc_id, limit=200)
@@ -126,7 +128,7 @@ def generate_mcq_api():
                     # Pick 1-3 random chunks and keep context size small (under 1200 chars) for speed
                     sampled_chunks = random.sample(chunks, min(3, len(chunks)))
                     combined_text = " ".join(sampled_chunks)[:1200]
-                    futures.append(executor.submit(generate_mcqs, combined_text, ask_count, difficulty))
+                    futures.append(executor.submit(generate_mcqs, combined_text, ask_count, difficulty, q_type))
                 
                 for future in concurrent.futures.as_completed(futures):
                     try:
